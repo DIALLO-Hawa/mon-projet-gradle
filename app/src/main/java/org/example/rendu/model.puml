@@ -1,2 +1,92 @@
 @startuml
+
+' Interface commune pour les requêtes
+interface Requete {
+    + List<Requete> getSousRequetes()
+    + int getProfondeur()
+    + Set<Personne> executer()
+    + void accept(VisiteurRequete visiteur)
+}
+
+' Classe Personne
+class Personne {
+    - String nom
+    - int age
+    - double salaire
+    + Personne(String nom, int age, double salaire)
+    + String getNom()
+    + int getAge()
+    + double getSalaire()
+}
+
+' Classe RequeteEnsemble
+class RequeteEnsemble implements Requete {
+    - Set<Personne> personnes
+    + RequeteEnsemble(Set<Personne> personnes)
+    + List<Requete> getSousRequetes()
+    + int getProfondeur()
+    + Set<Personne> executer()
+    + void accept(VisiteurRequete visiteur)
+}
+
+' Classe RequeteSelection
+class RequeteSelection implements Requete {
+    - Requete sousRequete
+    - Predicate<Personne> filtre
+    + RequeteSelection(Requete sousRequete, Predicate<Personne> filtre)
+    + List<Requete> getSousRequetes()
+    + int getProfondeur()
+    + Set<Personne> executer()
+    + void accept(VisiteurRequete visiteur)
+}
+
+' Classe RequeteDifference
+class RequeteDifference implements Requete {
+    - Requete requeteGauche
+    - Requete requeteDroite
+    + RequeteDifference(Requete requeteGauche, Requete requeteDroite)
+    + List<Requete> getSousRequetes()
+    + int getProfondeur()
+    + Set<Personne> executer()
+    + void accept(VisiteurRequete visiteur)
+}
+
+
+class RequeteUnion implements Requete {
+    - List<Requete> sousRequetes
+    + RequeteUnion(List<Requete> sousRequetes)
+    + List<Requete> getSousRequetes()
+    + int getProfondeur()
+    + Set<Personne> executer()
+    + void accept(VisiteurRequete visiteur)
+}
+
+
+interface VisiteurRequete {
+    + void visiter(RequeteEnsemble requete)
+    + void visiter(RequeteSelection requete)
+    + void visiter(RequeteDifference requete)
+    + void visiter(RequeteUnion requete)
+}
+
+
+class VisiteurCalculCout implements VisiteurRequete {
+    - int coutTotal
+    + int getCoutTotal()
+    + void visiter(RequeteEnsemble requete)
+    + void visiter(RequeteSelection requete)
+    + void visiter(RequeteDifference requete)
+    + void visiter(RequeteUnion requete)
+}
+
+
+
+Requete <|-- VisiteurRequete : accept(visiteur)
+VisiteurRequete <|-- VisiteurCalculCout
+RequeteUnion o--* Requete : "sousRequetes"
+RequeteDifference o-- Requete : "requeteGauche"
+RequeteDifference o-- Requete : "requeteDroite"
+RequeteSelection o-- Requete : "sousRequete"
+RequeteEnsemble o--* Personne : "personnes"
+
 @enduml
